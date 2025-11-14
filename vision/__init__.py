@@ -1,8 +1,8 @@
 """
 Thor-San Vision System
 
-Human-like binocular vision processing for robotic manipulation.
-Inspired by biological vision systems.
+Practical robotic vision using Intel RealSense D435i.
+Simple, efficient, and leverages hardware capabilities.
 """
 
-__version__ = "0.1.0"
+__version__ = "2.0.0"

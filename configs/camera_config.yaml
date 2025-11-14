@@ -1,59 +1,38 @@
-# Multi-Camera Configuration
-cameras:
-  # Left eye (primary)
-  left:
-    index: 0
-    name: "left_eye"
-    resolution: [640, 480]
-    fps: 30
+# RealSense D435i Configuration
 
-  # Right eye (secondary)
-  right:
-    index: 2
-    name: "right_eye"
-    resolution: [640, 480]
-    fps: 30
+realsense:
+  # RGB stream
+  rgb_width: 640
+  rgb_height: 480
+  rgb_fps: 30
 
-  # Optional: Top-down view
-  overhead:
-    index: 4
-    name: "overhead"
-    resolution: [640, 480]
-    fps: 30
-    enabled: false
+  # Depth stream
+  depth_width: 640
+  depth_height: 480
+  depth_fps: 30
 
-# Binocular Vision Parameters (Human-like)
-binocular:
-  # Inter-pupillary distance (like human eyes: ~6.5cm)
-  baseline_m: 0.065
+  # Enable streams
+  enable_rgb: true
+  enable_depth: true
+  enable_imu: false      # Enable for odometry/SLAM
+  enable_infrared: false # Enable for low-light conditions
 
-  # Estimated focal length (pixels) - calibrate for actual cameras
-  focal_length_px: 700.0
+  # Post-processing (hardware accelerated!)
+  enable_decimation: true      # Reduce depth resolution (faster)
+  enable_spatial_filter: true  # Smooth depth spatially
+  enable_temporal_filter: true # Reduce noise over time
+  enable_hole_filling: true    # Fill missing depth values
 
-  # Feature extraction method
-  feature_type: "orb"  # Options: "orb", "sift", "akaze"
-  max_features: 500
+  # Alignment
+  align_depth_to_color: true   # Align depth to RGB frame
 
-  # Temporal fusion (visual memory)
-  temporal_window: 10  # frames
-  temporal_decay: 0.95
+# Depth processing
+depth:
+  min_depth_m: 0.3  # Minimum valid depth (meters)
+  max_depth_m: 3.0  # Maximum valid depth (meters)
+  clip_range: true  # Clip values outside range
 
-  # Visual attention
-  use_attention: true
-  attention_sigma: 50.0  # Gaussian spread (pixels)
-
-  # Correspondence matching
-  match_ratio_threshold: 0.75  # Lowe's ratio test
-  min_match_confidence: 0.6
-  epipolar_threshold: 1.0  # pixels
-
-# Synchronization
-sync:
-  max_time_diff_ms: 50  # Maximum allowed time difference between frames
-  buffer_size: 5  # Frame buffer per camera
-
-# Auto-exposure and white balance
-auto_adjust:
-  enabled: true
-  exposure_auto: true
-  white_balance_auto: true
+# Performance
+performance:
+  target_fps: 30
+  use_gpu: true  # Use GPU for YOLO if available

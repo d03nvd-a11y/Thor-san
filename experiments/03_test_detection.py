@@ -1,170 +1,157 @@
 #!/usr/bin/env python3
 """
-Experiment 03: YOLO Object Detection and Tracking
+Experiment 03: Object Detection + Tracking with 3D Poses
 
-Tests real-time object detection and multi-object tracking.
+YOLO detection + multi-object tracking + 3D position from depth.
+This is where RealSense shines - we get object 3D poses instantly!
 """
 
 import cv2
 import yaml
-import time
 import sys
 import os
+import numpy as np
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from vision.capture import MultiCameraCapture
+from vision.realsense import RealSenseCamera, RealSenseConfig, DepthProcessor
 from vision.detection import YOLODetector, ObjectTracker
 
 
 def main():
     print("=" * 60)
-    print("EXPERIMENT 03: Object Detection and Tracking")
+    print("EXPERIMENT 03: Detection + Tracking + 3D Poses")
     print("=" * 60)
 
-    # Load configurations
+    # Load configs
     with open('configs/camera_config.yaml', 'r') as f:
         cam_config = yaml.safe_load(f)
 
     with open('configs/vision_config.yaml', 'r') as f:
         vis_config = yaml.safe_load(f)
 
-    # Initialize camera (use left camera)
-    print("\n[INFO] Starting camera...")
-    multi_cam = MultiCameraCapture(cam_config)
-    multi_cam.start()
+    # Initialize RealSense
+    print("\n[INFO] Starting RealSense...")
+    rs_cfg = cam_config['realsense']
+    config = RealSenseConfig(
+        enable_rgb=True,
+        enable_depth=True,
+        align_depth_to_color=True
+    )
+    camera = RealSenseCamera(config)
+    camera.start()
 
-    # Initialize YOLO detector
-    print("[INFO] Loading YOLO detector...")
+    depth_processor = DepthProcessor(camera.depth_scale)
+
+    # Initialize YOLO
+    print("[INFO] Loading YOLO...")
     try:
         detector = YOLODetector(
             model_name=vis_config['detection']['model'],
             confidence_threshold=vis_config['detection']['confidence_threshold'],
-            iou_threshold=vis_config['detection']['iou_threshold'],
-            device=vis_config['detection']['device'],
-            target_classes=vis_config['detection'].get('target_classes', None)
+            device=vis_config['detection'].get('device', 'cpu')
         )
-        print("[INFO] YOLO detector ready!")
     except Exception as e:
-        print(f"[ERROR] Failed to load YOLO: {e}")
-        print("[INFO] Make sure ultralytics is installed: pip install ultralytics")
-        multi_cam.stop()
+        print(f"[ERROR] YOLO failed: {e}")
+        camera.stop()
         return
 
     # Initialize tracker
     tracker = ObjectTracker(
         max_age=vis_config['tracking']['max_age'],
-        min_hits=vis_config['tracking']['min_hits'],
-        iou_threshold=vis_config['tracking']['iou_threshold']
+        min_hits=vis_config['tracking']['min_hits']
     )
 
     print("\n[CONTROLS]")
     print("  q - Quit")
-    print("  d - Toggle detection only (no tracking)")
-    print("  s - Show statistics")
+    print("  d - Toggle tracking")
+    print("  3 - Toggle 3D info overlay")
 
-    frame_count = 0
-    start_time = time.time()
     use_tracking = True
+    show_3d = True
+    frame_count = 0
 
     try:
         while True:
-            # Get frame from left camera
-            frames = multi_cam.get_frames()
-
-            if 'left' not in frames:
-                time.sleep(0.01)
+            frame = camera.get_frame()
+            if frame is None:
                 continue
 
-            frame = frames['left'].frame
-
             # Detect objects
-            detections = detector.detect(frame)
+            detections = detector.detect(frame.rgb)
 
+            # Update tracker
             if use_tracking:
-                # Update tracker
                 tracks = tracker.update(detections)
 
-                # Visualize tracks
-                vis_frame = tracker.visualize_tracks(
-                    frame,
-                    tracks,
-                    show_trajectory=True,
-                    show_id=True
-                )
+                # Get 3D positions
+                for track in tracks:
+                    cx, cy = track.detection.center
 
-                # Show info
-                info_text = f"Tracks: {len(tracks)} | Detections: {len(detections)}"
+                    # Get depth at object center
+                    depth_m = depth_processor.get_depth_at_point(
+                        frame.depth, cx, cy
+                    )
+
+                    # Add 3D info to track
+                    track.depth_m = depth_m
+
+                # Visualize
+                vis_frame = tracker.visualize_tracks(frame.rgb, tracks)
+
+                # Add 3D overlay
+                if show_3d:
+                    for track in tracks:
+                        if hasattr(track, 'depth_m') and track.depth_m > 0:
+                            x1, y1, _, _ = track.detection.bbox
+                            text = f"Z: {track.depth_m:.2f}m"
+                            cv2.putText(
+                                vis_frame, text,
+                                (x1, y1 - 25),
+                                cv2.FONT_HERSHEY_SIMPLEX,
+                                0.5, (0, 255, 255), 2
+                            )
+
+                info_text = f"Tracks: {len(tracks)}"
             else:
-                # Just show detections
-                vis_frame = detector.visualize_detections(
-                    frame,
-                    detections,
-                    show_conf=True,
-                    show_labels=True
-                )
-
+                vis_frame = detector.visualize_detections(frame.rgb, detections)
                 info_text = f"Detections: {len(detections)}"
 
-            # Add FPS overlay
+            # FPS info
             frame_count += 1
-            if frame_count % 30 == 0:
-                elapsed = time.time() - start_time
-                fps = frame_count / elapsed
-                info_text += f" | FPS: {fps:.1f}"
-
             cv2.putText(
-                vis_frame,
-                info_text,
+                vis_frame, info_text,
                 (10, 30),
                 cv2.FONT_HERSHEY_SIMPLEX,
-                0.7,
-                (0, 255, 0),
-                2
+                0.7, (0, 255, 0), 2
             )
 
-            cv2.imshow("Object Detection & Tracking", vis_frame)
+            cv2.imshow("Detection + Tracking + 3D", vis_frame)
+            cv2.imshow("Depth", frame.depth_colormap)
 
-            # Keyboard controls
+            # Controls
             key = cv2.waitKey(1) & 0xFF
 
             if key == ord('q'):
                 break
-
             elif key == ord('d'):
                 use_tracking = not use_tracking
                 if not use_tracking:
                     tracker.reset()
                 print(f"\n[INFO] Tracking: {'ON' if use_tracking else 'OFF'}")
-
-            elif key == ord('s'):
-                print("\n=== Statistics ===")
-                if use_tracking:
-                    tracker_stats = tracker.get_statistics()
-                    for key, value in tracker_stats.items():
-                        print(f"  {key}: {value}")
-                else:
-                    print(f"  Total detections: {len(detections)}")
-                print()
+            elif key == ord('3'):
+                show_3d = not show_3d
+                print(f"\n[INFO] 3D overlay: {'ON' if show_3d else 'OFF'}")
 
     except KeyboardInterrupt:
-        print("\n[INFO] Interrupted by user")
+        print("\n[INFO] Interrupted")
 
     finally:
-        # Cleanup
-        print("\n[INFO] Shutting down...")
-        multi_cam.stop()
+        camera.stop()
         cv2.destroyAllWindows()
 
-        elapsed = time.time() - start_time
-        avg_fps = frame_count / elapsed if elapsed > 0 else 0
-
-        print("\n=== Final Statistics ===")
-        print(f"Total frames: {frame_count}")
-        print(f"Duration: {elapsed:.1f}s")
-        print(f"Average FPS: {avg_fps:.1f}")
-
     print("\n✓ Experiment complete!")
+    print("💡 Notice how easy it is to get 3D poses with RealSense!")
 
 
 if __name__ == "__main__":
