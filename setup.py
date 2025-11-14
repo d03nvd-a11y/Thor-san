@@ -1,0 +1,35 @@
+from setuptools import setup, find_packages
+
+setup(
+    name="thor-san",
+    version="0.1.0",
+    description="Human-like binocular vision system for 6-DOF robotic arm",
+    author="Thor-San Project",
+    packages=find_packages(),
+    install_requires=[
+        "numpy>=1.24.0",
+        "opencv-python>=4.8.0",
+        "opencv-contrib-python>=4.8.0",
+        "torch>=2.0.0",
+        "torchvision>=0.15.0",
+        "ultralytics>=8.0.0",
+        "open3d>=0.17.0",
+        "scipy>=1.11.0",
+        "scikit-learn>=1.3.0",
+        "pyyaml>=6.0",
+        "matplotlib>=3.7.0",
+        "plotly>=5.14.0",
+        "tqdm>=4.65.0",
+        "pillow>=10.0.0",
+    ],
+    python_requires=">=3.8",
+    classifiers=[
+        "Development Status :: 3 - Alpha",
+        "Intended Audience :: Science/Research",
+        "Topic :: Scientific/Engineering :: Artificial Intelligence",
+        "Topic :: Scientific/Engineering :: Image Recognition",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+    ],
+)

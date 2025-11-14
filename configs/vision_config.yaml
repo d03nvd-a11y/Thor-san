@@ -1,0 +1,79 @@
+# Vision Processing Configuration
+
+# Object Detection (YOLO v8)
+detection:
+  model: "yolov8n.pt"  # Options: yolov8n, yolov8s, yolov8m, yolov8l, yolov8x
+  confidence_threshold: 0.5
+  iou_threshold: 0.45
+  max_detections: 50
+  device: "cuda"  # "cuda" or "cpu"
+
+  # Object classes of interest (COCO dataset)
+  target_classes:
+    - "person"
+    - "cup"
+    - "bottle"
+    - "bowl"
+    - "book"
+    - "cell phone"
+    - "keyboard"
+    - "mouse"
+
+# Object Tracking
+tracking:
+  max_age: 30  # frames before track is deleted
+  min_hits: 3  # minimum detections before track is confirmed
+  iou_threshold: 0.3
+
+# Depth Processing
+depth:
+  method: "binocular"  # "binocular" or "monocular_estimation"
+  min_depth_m: 0.2
+  max_depth_m: 3.0
+  depth_filter_size: 5  # median filter size
+
+  # Disparity calculation
+  min_disparity: 0
+  max_disparity: 128
+  block_size: 15
+
+# 3D Spatial Memory
+spatial_memory:
+  # Octree parameters
+  octree_resolution: 0.01  # 1cm voxel size
+  max_depth: 10  # octree depth
+
+  # Point cloud
+  voxel_downsample: 0.005  # 5mm downsampling
+  statistical_filter:
+    nb_neighbors: 20
+    std_ratio: 2.0
+
+  # Object database
+  database_path: "data/maps/object_database.db"
+  confidence_threshold: 0.7
+
+# Intelligence Layer
+intelligence:
+  # Scene analysis
+  surface_detection:
+    plane_threshold: 0.01  # meters
+    min_plane_points: 100
+
+  # Grasp planning
+  grasp_approach_distance: 0.1  # meters
+  grasp_clearance: 0.02  # meters
+
+  # Task planning
+  planning_horizon: 10  # steps
+  replan_threshold: 0.5  # confidence
+
+# Visualization
+visualization:
+  show_features: true
+  show_matches: true
+  show_depth: true
+  show_detections: true
+  show_3d_map: true
+  point_size: 2.0
+  colormap: "jet"  # for depth visualization
