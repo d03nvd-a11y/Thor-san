@@ -45,6 +45,33 @@ python experiments/03_test_detection.py
 python experiments/04_build_3d_map.py
 ```
 
+### Testing Without Hardware
+
+Don't have a RealSense D435i? No problem! Use recorded bag files:
+
+```bash
+# Download sample bag files
+python scripts/download_sample_bags.py
+
+# Test bag file playback
+python experiments/00_test_bag_file.py
+
+# Run detection with bag files
+python experiments/03_test_detection_BAG.py
+```
+
+**Use bag files in your code:**
+```python
+# Instead of live camera
+from vision.realsense import BagFilePlayer
+
+camera = BagFilePlayer("data/bags/outdoor_scene.bag", loop=True)
+camera.start()
+
+# Everything else works exactly the same!
+frame = camera.get_frame()
+```
+
 ---
 
 ## Code Examples

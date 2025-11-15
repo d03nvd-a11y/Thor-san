@@ -8,7 +8,14 @@ NO overcomplicated feature matching or calibration needed!
 Hardware does all the heavy lifting.
 """
 
-from .camera import RealSenseCamera, RealSenseConfig
+from .camera import RealSenseCamera, RealSenseConfig, RealSenseFrame
 from .processing import DepthProcessor
+from .bag_player import BagFilePlayer
 
-__all__ = ['RealSenseCamera', 'RealSenseConfig', 'DepthProcessor']
+__all__ = [
+    'RealSenseCamera',
+    'RealSenseConfig',
+    'RealSenseFrame',
+    'DepthProcessor',
+    'BagFilePlayer'
+]
