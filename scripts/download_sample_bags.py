@@ -13,16 +13,28 @@ from pathlib import Path
 
 SAMPLE_BAGS = [
     {
-        'name': 'outdoor_scene',
-        'url': 'https://librealsense.intel.com/rs-tests/TestData/outdoors_1color.bag',
-        'size': '~50MB',
-        'description': 'Outdoor scene with depth'
+        'name': 'tabletop_manipulation',
+        'url': 'https://vision.in.tum.de/rgbd/dataset/freiburg1/rgbd_dataset_freiburg1_desk.bag',
+        'size': '~180MB',
+        'description': 'INDOOR: Desk with objects - BEST for tabletop manipulation'
     },
     {
-        'name': 'stairs',
+        'name': 'tabletop_objects',
+        'url': 'https://vision.in.tum.de/rgbd/dataset/freiburg3/rgbd_dataset_freiburg3_cabinet.bag',
+        'size': '~240MB',
+        'description': 'INDOOR: Cabinet with objects on surfaces'
+    },
+    {
+        'name': 'indoor_room',
+        'url': 'https://vision.in.tum.de/rgbd/dataset/freiburg1/rgbd_dataset_freiburg1_room.bag',
+        'size': '~150MB',
+        'description': 'INDOOR: Room with furniture and objects'
+    },
+    {
+        'name': 'test_small',
         'url': 'https://librealsense.intel.com/rs-tests/TestData/stairs.bag',
         'size': '~30MB',
-        'description': 'Indoor stairs navigation'
+        'description': 'SMALL: Quick test file (stairs)'
     }
 ]
 

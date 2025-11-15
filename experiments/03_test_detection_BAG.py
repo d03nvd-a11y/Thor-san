@@ -23,7 +23,7 @@ from vision.detection import YOLODetector, ObjectTracker
 
 # ========== CONFIGURATION ==========
 # Set your bag file path here
-BAG_FILE = "data/bags/outdoor_scene.bag"  # Change this to your bag file
+BAG_FILE = "data/bags/tabletop_manipulation.bag"  # Indoor desk scene - perfect for robot arm!
 
 # Or automatically find first available bag file
 def find_first_bag():

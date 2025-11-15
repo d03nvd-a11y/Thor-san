@@ -65,12 +65,14 @@ python experiments/03_test_detection_BAG.py
 # Instead of live camera
 from vision.realsense import BagFilePlayer
 
-camera = BagFilePlayer("data/bags/outdoor_scene.bag", loop=True)
+camera = BagFilePlayer("data/bags/tabletop_manipulation.bag", loop=True)
 camera.start()
 
 # Everything else works exactly the same!
 frame = camera.get_frame()
 ```
+
+**Recommended for tabletop robot arms**: Download `tabletop_manipulation.bag` - desk scene with objects!
 
 ---
 
